@@ -13,7 +13,7 @@ object FavoriteCards : Table("favorite_cards") {
     val imageSmall  = varchar("image_url_small", 500)
     val rarity      = varchar("rarity", 100).nullable()
     val setName     = varchar("set_name", 200)
-    
+
     val statHp      = integer("stat_hp").default(0)
     val statAtk     = integer("stat_attack").default(0)
     val statDef     = integer("stat_defense").default(0)
@@ -21,7 +21,7 @@ object FavoriteCards : Table("favorite_cards") {
     val statSpDef   = integer("stat_sp_defense").default(0)
     val statSpd     = integer("stat_speed").default(0)
     val primaryType = varchar("primary_type", 50).default("normal")
-    
+
     val inTeam      = bool("in_team").default(false)
     val heldItem    = varchar("held_item", 50).nullable()
     val timesUsed   = integer("times_used").default(0)
@@ -71,13 +71,25 @@ object UserProfiles : Table("user_profile") {
     override val primaryKey = PrimaryKey(id)
 }
 
+object RogueUpgradesTable : Table("rogue_upgrades") {
+    val upgradeId = varchar("upgrade_id", 50).uniqueIndex()
+    val level     = integer("level").default(0)
+}
+
+object RogueLivesTable : Table("rogue_lives") {
+    val id         = integer("id").default(1)
+    val lives      = integer("lives").default(3)
+    val lastRefill = long("last_refill").default(0)
+    override val primaryKey = PrimaryKey(id)
+}
+
 object DatabaseFactory {
     fun init() {
         val dbPath = File(System.getProperty("user.home"), ".pokemonarena/${Constants.DB_NAME}")
         dbPath.parentFile.mkdirs()
         Database.connect(url = "jdbc:sqlite:${dbPath.absolutePath}", driver = "org.sqlite.JDBC")
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(FavoriteCards, BattleHistory, UserStatisticsTable, ItemInventory, GymBadges, UserProfiles)
+            SchemaUtils.createMissingTablesAndColumns(FavoriteCards, BattleHistory, UserStatisticsTable, ItemInventory, GymBadges, UserProfiles, RogueUpgradesTable, RogueLivesTable)
         }
     }
 }

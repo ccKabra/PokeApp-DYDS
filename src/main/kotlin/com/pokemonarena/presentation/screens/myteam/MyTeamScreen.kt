@@ -49,7 +49,7 @@ fun MyTeamScreen(viewModel: MyTeamViewModel, navigator: Navigator) {
             else Row(Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
 
                 Column(Modifier.width(260.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    
+
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
                         Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(AppIcons.coin, contentDescription = "Monedas",

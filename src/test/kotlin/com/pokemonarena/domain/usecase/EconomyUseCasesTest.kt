@@ -173,7 +173,7 @@ class CoinRewardsTest {
         every { repo.getUserStatistics() } returns flowOf(UserStatistics(coins = 100))
         every { repo.getBattleHistory()  } returns flowOf(listOf(TestFixtures.playerWin))
 
-        useCase.execute(TestFixtures.playerWin)   // coinsDelta = +45
+        useCase.execute(TestFixtures.playerWin)
 
         val slot = slot<UserStatistics>()
         coVerify { repo.saveUserStatistics(capture(slot)) }
@@ -185,7 +185,7 @@ class CoinRewardsTest {
         every { repo.getUserStatistics() } returns flowOf(UserStatistics(coins = 100))
         every { repo.getBattleHistory()  } returns flowOf(listOf(TestFixtures.botWin))
 
-        useCase.execute(TestFixtures.botWin)      // coinsDelta = -10
+        useCase.execute(TestFixtures.botWin)
 
         val slot = slot<UserStatistics>()
         coVerify { repo.saveUserStatistics(capture(slot)) }

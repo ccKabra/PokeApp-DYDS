@@ -25,6 +25,7 @@ import com.pokemonarena.domain.entity.BattleFatigue
 import com.pokemonarena.domain.entity.BattleRewards
 import com.pokemonarena.domain.entity.Card
 import com.pokemonarena.domain.entity.Region
+import com.pokemonarena.domain.entity.TeamRules
 import com.pokemonarena.domain.entity.WeatherCondition
 import com.pokemonarena.presentation.navigation.Navigator
 import com.pokemonarena.presentation.navigation.Screen
@@ -180,7 +181,7 @@ private fun PrepContent(state: LeagueUiState.Prep, viewModel: LeagueViewModel) {
             items(state.owned, key = { it.id }) { card ->
                 PrepCardRow(card,
                     inTeam  = state.team.any { it.id == card.id },
-                    blocked = state.team.size >= 3 && state.team.none { it.id == card.id },
+                    blocked = state.team.size >= TeamRules.SIZE && state.team.none { it.id == card.id },
                     availableItems = state.availableItems,
                     fatigueCures   = state.fatigueCures,
                     onToggle  = { viewModel.onEvent(LeagueUiEvent.ToggleCard(card.id)) },

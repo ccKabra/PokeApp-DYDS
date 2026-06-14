@@ -24,6 +24,12 @@ class RogueEvolutionTest {
     }
 
     @Test
+    fun `nextStageAny_ignoresTheLevelGate`() {
+        assertEquals(44, RogueEvolutions.nextStageAny(43), "la reliquia evoluciona sin importar el nivel")
+        assertEquals(null, RogueEvolutions.nextStageAny(143), "snorlax sigue sin evolucionar")
+    }
+
+    @Test
     fun `evolveInto_adoptsNewSpeciesStatsAndKeepsLevel`() {
         val base = RoguePokemon.of(oddish, level = 12)
         val evolved = base.evolveInto(gloom)

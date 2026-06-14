@@ -41,7 +41,7 @@ class GymRepositoryImpl : GymRepository {
         val cardPool: List<BotCardConfig>
     ) {
         init {
-            require(cardPool.size >= 3) { "Pool de $name necesita al menos 3 cartas" }
+            require(cardPool.size >= TeamRules.SIZE) { "Pool de $name necesita al menos ${TeamRules.SIZE} cartas" }
             require(cardPool.all { it.itemId != null }) { "Todas las cartas del pool de $name deben tener item" }
         }
     }

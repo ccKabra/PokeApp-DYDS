@@ -3,8 +3,6 @@ package com.pokemonarena
 import com.pokemonarena.domain.entity.*
 import kotlin.random.Random
 
-// Random determinista para tests: nextFloat() devuelve siempre `value`.
-// Con 0.99 nunca hay crítico/jackpot; con 0.0 siempre toca el mejor premio.
 class FixedRandom(private val value: Float) : Random() {
     override fun nextBits(bitCount: Int): Int = (value * (1L shl bitCount)).toLong().toInt()
 }

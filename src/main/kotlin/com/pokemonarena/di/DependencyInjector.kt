@@ -13,6 +13,8 @@ import com.pokemonarena.data.local.dao.BattleHistoryDao
 import com.pokemonarena.data.local.dao.FavoriteCardDao
 import com.pokemonarena.data.local.dao.GymBadgeDao
 import com.pokemonarena.data.local.dao.ItemInventoryDao
+import com.pokemonarena.data.local.dao.RogueLivesDao
+import com.pokemonarena.data.local.dao.RogueUpgradeDao
 import com.pokemonarena.data.local.dao.UserProfileDao
 import com.pokemonarena.data.local.dao.UserStatisticsDao
 import com.pokemonarena.data.repository.*
@@ -75,6 +77,8 @@ object DependencyInjector {
     private val itemInventoryDao:  ItemInventoryDao  by lazy { ItemInventoryDao() }
     private val gymBadgeDao:       GymBadgeDao       by lazy { GymBadgeDao() }
     private val userProfileDao:    UserProfileDao    by lazy { UserProfileDao() }
+    private val rogueUpgradeDao:   RogueUpgradeDao   by lazy { RogueUpgradeDao() }
+    private val rogueLivesDao:     RogueLivesDao     by lazy { RogueLivesDao() }
 
     private val itemsSource: ItemsExternalSource by lazy { ItemsExternalSource(httpClient) }
 
@@ -87,6 +91,7 @@ object DependencyInjector {
     private val badgeRepository   by lazy { BadgeRepositoryImpl(gymBadgeDao) }
     private val profileRepository by lazy { ProfileRepositoryImpl(userProfileDao) }
     private val roguePoolRepository by lazy { RoguePoolRepositoryImpl() }
+    private val rogueMetaRepository by lazy { RogueMetaRepositoryImpl(rogueUpgradeDao, rogueLivesDao) }
 
     private val getPokemonsUseCase:      GetPokemonsUseCase      = GetPokemonsUseCaseImpl(pokemonRepository)
     private val getPokemonDetailUseCase: GetPokemonDetailUseCase = GetPokemonDetailUseCaseImpl(pokemonRepository)
@@ -194,6 +199,11 @@ object DependencyInjector {
 
     fun rogueViewModel() = RogueViewModel(
         GetRoguePoolUseCase(roguePoolRepository),
-        CashOutRogueRunUseCase(battleRepository)
+        CashOutRogueRunUseCase(battleRepository),
+        GetRogueMetaUseCase(rogueMetaRepository),
+        PurchaseRogueUpgradeUseCase(rogueMetaRepository, battleRepository),
+        GetUserCoinsUseCase(battleRepository),
+        GetRogueLivesUseCase(rogueMetaRepository),
+        ConsumeRogueLifeUseCase(rogueMetaRepository)
     )
 }

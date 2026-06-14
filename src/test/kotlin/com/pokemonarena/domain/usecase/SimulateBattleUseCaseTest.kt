@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 
 class SimulateBattleUseCaseTest {
 
-    private val useCase = SimulateBattleUseCase(FixedRandom(0.99f))   // sin críticos
+    private val useCase = SimulateBattleUseCase(FixedRandom(0.99f))
 
     @Test
     fun `execute_whenPlayerCardsAreStronger_playerWinsAllRounds`() {
@@ -52,8 +52,6 @@ class SimulateBattleUseCaseTest {
 
     @Test
     fun `execute_winnerIsDecidedByRoundsNotByTotalScore`() {
-        // El jugador gana 2 rondas ajustadas; el bot gana 1 por paliza.
-        // Por puntaje total ganaría el bot, pero por rondas gana el jugador.
         val slightlyStrong = TestFixtures.card("p1", pokemonDetail =
             TestFixtures.detail(types = listOf("normal"), stats = Stats(90, 90, 90, 90, 90, 90)))
         val slightlyWeak   = TestFixtures.card("b1", pokemonDetail =
@@ -78,7 +76,7 @@ class SimulateBattleUseCaseTest {
     @Test
     fun `execute_appliesTypeMatchupMultipliers`() {
         val result = useCase.execute(
-            playerCards = listOf(TestFixtures.fireCard),      // fire vs grass: ventaja
+            playerCards = listOf(TestFixtures.fireCard),
             botCards    = listOf(TestFixtures.grassCard),
             weather     = WeatherCondition.CLEAR,
             gym         = TestFixtures.gym()

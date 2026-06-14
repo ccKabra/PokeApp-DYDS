@@ -15,7 +15,6 @@ class RoguePoolRepositoryImpl : RoguePoolRepository {
             RogueSpecies(pokeId, name, artworkUrl(pokeId), types, stats, tier)
 
         val POOL: List<RogueSpecies> = listOf(
-            // Tier 1 — pisos 1 a 3
             species(16,  "pidgey",     listOf("normal", "flying"),  Stats(40, 45, 40, 35, 35, 56),    1),
             species(19,  "rattata",    listOf("normal"),            Stats(30, 56, 35, 25, 35, 72),    1),
             species(27,  "sandshrew",  listOf("ground"),            Stats(50, 75, 85, 20, 30, 40),    1),
@@ -30,7 +29,6 @@ class RoguePoolRepositoryImpl : RoguePoolRepository {
             species(120, "staryu",     listOf("water"),             Stats(30, 45, 55, 70, 55, 85),    1),
             species(133, "eevee",      listOf("normal"),            Stats(55, 55, 50, 45, 65, 55),    1),
 
-            // Tier 2 — pisos 4 a 6
             species(2,   "ivysaur",    listOf("grass", "poison"),   Stats(60, 62, 63, 80, 80, 60),    2),
             species(5,   "charmeleon", listOf("fire"),              Stats(58, 64, 58, 80, 65, 80),    2),
             species(8,   "wartortle",  listOf("water"),             Stats(59, 63, 80, 65, 80, 58),    2),
@@ -43,7 +41,6 @@ class RoguePoolRepositoryImpl : RoguePoolRepository {
             species(82,  "magneton",   listOf("electric", "steel"), Stats(50, 60, 95, 120, 70, 70),   2),
             species(93,  "haunter",    listOf("ghost", "poison"),   Stats(45, 50, 45, 115, 55, 95),   2),
 
-            // Tier 3 — pisos 7 y 8
             species(3,   "venusaur",   listOf("grass", "poison"),   Stats(80, 82, 83, 100, 100, 80),  3),
             species(6,   "charizard",  listOf("fire", "flying"),    Stats(78, 84, 78, 109, 85, 100),  3),
             species(9,   "blastoise",  listOf("water"),             Stats(79, 83, 100, 85, 105, 78),  3),
@@ -58,7 +55,6 @@ class RoguePoolRepositoryImpl : RoguePoolRepository {
             species(121, "starmie",    listOf("water", "psychic"),  Stats(60, 75, 85, 100, 85, 115),  3),
             species(143, "snorlax",    listOf("normal"),            Stats(160, 110, 65, 65, 110, 30), 3),
 
-            // Jefes — guardianes de la cima
             species(144, "articuno",   listOf("ice", "flying"),     Stats(90, 85, 100, 95, 125, 85),    RogueSpecies.BOSS_TIER),
             species(145, "zapdos",     listOf("electric", "flying"),Stats(90, 90, 85, 125, 90, 100),    RogueSpecies.BOSS_TIER),
             species(146, "moltres",    listOf("fire", "flying"),    Stats(90, 100, 90, 125, 85, 90),    RogueSpecies.BOSS_TIER),

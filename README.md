@@ -12,10 +12,10 @@ a través de 3 regiones**, economía con tienda e items equipables, y un modo
 
 ```
         ┌──────────────────────────────────────────────┐
-        │             PokemonDetailBroker               │
-        │  (PokemonDetailExternalSource: combina las    │
-        │   dos fuentes de datos + imagen)              │
-        └──────────┬─────────────────────┬──────────────┘
+        │             PokemonDetailBroker              │
+        │  (PokemonDetailExternalSource: combina las   │
+        │   dos fuentes de datos + imagen)             │
+        └──────────┬─────────────────────┬─────────────┘
                    │                     │
         ┌──────────▼──────┐   ┌──────────▼──────────┐
         │  PokeApiSource  │   │   TcgExternalSource │
@@ -24,10 +24,10 @@ a través de 3 regiones**, economía con tienda e items equipables, y un modo
         └─────────────────┘   └─────────────────────┘
 
         ┌──────────────────────────────────────────────┐
-        │           CardsSourceWithFallback             │
-        │  (PokemonCardsExternalSource: cartas TCG)     │
-        │   primaria: TcgDex  →  secundaria: Tcg        │
-        └──────────┬─────────────────────┬──────────────┘
+        │           CardsSourceWithFallback            │
+        │  (PokemonCardsExternalSource: cartas TCG)    │
+        │   primaria: TcgDex  →  secundaria: Tcg       │
+        └──────────┬─────────────────────┬─────────────┘
                    │                     │
         ┌──────────▼──────┐   ┌──────────▼──────────┐
         │ TcgDexSource    │   │   TcgExternalSource │
@@ -36,8 +36,8 @@ a través de 3 regiones**, economía con tienda e items equipables, y un modo
         └─────────────────┘   └─────────────────────┘
 
         ┌──────────────────────────────────────────────┐
-        │                 WeatherSource                 │
-        │                open-meteo.com                 │
+        │                 WeatherSource                │
+        │                open-meteo.com                │
         └──────────────────────────────────────────────┘
 ```
 
@@ -88,13 +88,16 @@ src/main/kotlin/com/pokemonarena/
 │   │   ├── CoinMine.kt · AimGame.kt ← reglas de los dos minijuegos de la Mina
 │   │   ├── Item.kt                  ← items equipables, consumibles y exclusivos
 │   │   ├── PlayerProfile.kt         ← perfil (nombre + género)
-│   │   └── Rogue*.kt                ← MÓDULO ROGUE (entidades, items, evoluciones,
-│   │                                  ataques) — totalmente aparte del juego base
+│   │   └── Rogue*.kt                ← MÓDULO ROGUE: roguelike ganable, aparte del juego
+│   │                                  base (entities, map, events, items, evolutions,
+│   │                                  moves, upgrades, lives) — todo data-driven
 │   ├── repository/Repositories.kt   ← interfaces de repositorio (DIP)
 │   └── usecase/                      ← un caso de uso por acción, todos con execute()
 │       ├── GetPokemons / GetPokemonDetail / Battle / Card / Gym / Item / Badge
 │       ├── Statistics / Team / MineCoins / RegisterAimShot / Profile / CoinTransactions
-│       └── Rogue*                    ← pool, motor de combate y cash-out del modo Rogue
+│       └── Rogue*                    ← pool, motor de combate (RogueBattleEngine),
+│                                       progresión (RogueProgression), meta (mejoras +
+│                                       vidas) y cash-out del modo Rogue
 │
 ├── data/
 │   ├── external/
@@ -105,9 +108,10 @@ src/main/kotlin/com/pokemonarena/
 │   ├── local/
 │   │   ├── database/Database.kt     ← Exposed + SQLite, auto-migración
 │   │   └── dao/                     ← FavoriteCard, BattleHistory, UserStatistics,
-│   │                                  ItemInventory, GymBadge, UserProfile
+│   │                                  ItemInventory, GymBadge, UserProfile,
+│   │                                  RogueUpgrade, RogueLives
 │   └── repository/                  ← *RepositoryImpl (Pokemon, Card, Gym, Weather,
-│                                       Battle, Item, Badge, Profile, RoguePool)
+│                                       Battle, Item, Badge, Profile, RoguePool, RogueMeta)
 │
 ├── di/DependencyInjector.kt         ← DI manual con lazy, sin Koin
 │
@@ -123,7 +127,7 @@ src/main/kotlin/com/pokemonarena/
         ├── gyms/ · battle/ · result/ · league/   ← campaña por regiones
         ├── myteam/ · items/
         ├── mine/       ← globo anti-autoclicker + minijuego de puntería
-        └── rogue/      ← Expedición Rogue (UI propia)
+        └── rogue/      ← Expedición Rogue (UI inmersiva + RogueEventResolver)
 ```
 
 ---
@@ -166,7 +170,7 @@ grid con **todas las versiones TCG** (rareza, set, precio y BST de combate propi
 Precio dinámico `stats × rareza` (mín. 100). **Colección limitada a 8 cartas**:
 con la colección llena hay que vender antes de comprar.
 
-### ⚔ Mi Equipo
+###  Mi Equipo
 Grilla a pantalla completa de 8 slots con BST efectivo (rareza + item + fatiga),
 item equipado y venta. Selección de hasta 3 cartas para el equipo de batalla.
 **Venta al 50%** castigada por fatiga; **curar fatiga** con Raíz Energía.
@@ -229,33 +233,40 @@ Cinto Experto, Cinta Fuerte, Telescopio. Se equipan por carta en Mi Equipo.
    (más chico = más caro), errar al fondo descuenta, y si no los reventás en 3s
    explotan solos. Mini reflejos puros.
 
-### 💀 Expedición Rogue — el "Combate Imposible"
-Un modo **roguelite totalmente aparte** (entidades, motor de combate y economía
-propios; no toca tu colección ni tu equipo). Diseñado para ser **imposible de
-ganar por diseño** — emula la frustración de una batalla amañada — pero profundo
-y estratégico:
+###  Expedición Rogue — roguelike estilo Pokelike
+Un modo **roguelike totalmente aparte** (entidades, motor de combate y economía
+propios; no toca tu colección ni tu equipo del juego base). Es **difícil pero
+ganable** y está pensado como una actividad lateral:
 
-- **Draft**: elegís 1 de 3 iniciales al azar y subís **12 pisos**.
-- **Caminos**: en cada piso elegís entre Combate, Élite, Descanso, Tesoro o **Dojo**
-  (entrenamiento que da mucha XP y cura).
-- **Combate por turnos con HP**: elegís **ataque** (tipo + STAB importan), cambiás
-  de Pokémon (cuesta el turno), con animaciones de embestida, números de daño y
-  barras de HP. El HP persiste entre combates; un debilitado no vuelve.
-- **Crecimiento real**: los Pokémon ganan XP, **suben de nivel**, **aprenden
-  ataques** y **evolucionan** (Oddish→Gloom→Vileplume…). Los reclutas llegan ya
-  evolucionados acorde a tu nivel.
-- **Recompensas**: reclutar (hasta 3), curar, **bendiciones** pasivas (Furia,
-  Aguante, Ímpetu, Vampirismo, Fortuna) o **items equipables** (boostean ATQ/DEF/VEL/HP).
-- **Armadura Argumental**: el rival **nunca baja de 1 HP**; todo golpe letal lo
-  enfurece (se cura, se potencia y te suelta una burla) y además escala cada turno.
-  No existe rama de victoria: el KO es estructuralmente inalcanzable.
-- **Sobrevivir y huir**: no se gana, pero aguantando 6 turnos podés **escapar** al
-  siguiente piso (o gastar una de tus 3 **Fichas de Esperanza** para huir antes).
-- **Jefe final**: legendario, **no se puede vencer ni huir**. La derrota es inevitable.
-- Cobrás la mitad del botín juntado, ganes o no (nunca perdés monedas).
+- **Vidas**: entrar cuesta **1 de 3 vidas**; se recarga **1 cada 15 min** (persistente),
+  para que el modo no se spamee.
+- **Mapa de nodos** (estilo *Slay the Spire*): cada uno de los **3 actos** es un grafo
+  con caminos ramificados; elegís el próximo nodo. Tipos: **Combate, Captura, Objeto,
+  Centro Pokémon, Cofre de Oro, Evento** y **Jefe** (al final de cada acto). El
+  generador garantiza que no haya callejones sin salida.
+- **Auto-battler**: definís el orden del equipo **arrastrándolo con el mouse** y el
+  combate se resuelve solo, duelo a duelo, según ese orden. Daño por stats + tipos
+  (**x2 / x0.5**) + STAB; la Velocidad decide quién pega primero. HP persistente; un
+  debilitado no vuelve en la run; si cae todo el equipo, **Game Over**.
+- **Crecimiento real**: tras cada victoria **todo el equipo en pie gana XP**, sube de
+  nivel, aprende ataques y **evoluciona** (Oddish→Gloom→Vileplume…). Hay eventos que
+  evolucionan al instante; reclutas y capturas llegan crecidos y de buen tier.
+- **Mochila intercambiable**: los objetos se acumulan en una mochila y se pueden
+  **equipar, desequipar e intercambiar** entre Pokémon durante la run.
+- **Eventos**: situaciones con **3 opciones** de efectos declarativos (oro, cura, daño
+  no letal, subir nivel, evolución, azar, compra, combate) — nunca matan la run de golpe.
+- **Recompensas**: reclutar (equipo de hasta **6**), curar, **bendiciones** pasivas
+  (Furia, Aguante, Ímpetu, Vampirismo, Fortuna) u **objetos**.
+- **Meta-progresión**: el oro que cobrás se gasta en una **tienda permanente persistida**
+  (Alcancía, Veteranía, Vitalidad, Trébol, Mochila) que arranca activa en cada futura
+  expedición — cada intento te hace un poco más fuerte.
+- **Objetivo**: vencer a los **3 jefes** para coronarte **campeón** y cobrar todo el oro
+  juntado + bonus. Cobrás el oro acumulado ganes o no (nunca perdés monedas).
 
-> La imposibilidad de ganar es **intencional y está documentada** en `RogueRules`,
-> y cubierta por tests. Es reversible por diseño (no hay un flag mágico).
+> **Diseño**: la run vive en un `RogueViewModel` orquestador, pero la lógica pesada está
+> aislada y testeada en clases de dominio dedicadas — `RogueBattleEngine` (duelos),
+> `RogueProgression` (XP/evolución/spawns) y `RogueEventResolver` (intérprete de efectos
+> de eventos). El mapa, los eventos y la meta-progresión son **data-driven**.
 
 ---
 
@@ -269,11 +280,11 @@ Cobertura amplia con `kotlin.test` + **MockK** + **Fakes propios** + Coroutines 
 | **Reglas de dominio** | `GameRulesTest`, `WeatherConditionTest`, `SimulateBattleUseCaseTest`, `EconomyUseCasesTest`, `MineCoinsUseCaseTest`, `RegisterAimShotUseCaseTest` |
 | **Use cases / repos** | `UseCasesTest`, `ItemUseCasesTest`, `UpdateStatisticsAfterBattleUseCaseTest`, `RepositoryImplTest`, `GymRepositoryImplTest`, `CardRepositoryImplTest` |
 | **ViewModels** | `ViewModelsTest`, `NewViewModelsTest`, `CardDetailViewModelTest`, `CollectionViewModelTest`, `GymsViewModelTest`, `StatisticsViewModelTest`, `MineViewModelTest` |
-| **Modo Rogue** | `RogueBattleEngineTest`, `RogueRulesTest`, `RogueProgressionTest`, `RogueItemTest`, `RogueEvolutionTest`, `RogueViewModelTest` |
+| **Modo Rogue** | `RogueBattleEngineTest`, `RogueRulesTest`, `RogueMapTest`, `RogueEventsTest`, `RogueEventResolverTest`, `RogueProgressionTest`, `RogueItemTest`, `RogueEvolutionTest`, `RogueLivesTest`, `RogueViewModelTest` |
 
-Los tests del modo Rogue incluyen **garantías de que la victoria es imposible**
-(el rival nunca cae, atacar para siempre termina en derrota, el jefe no se puede
-huir ni vencer).
+Los tests del modo Rogue cubren que el **combate es ganable**, que el **mapa no tiene
+callejones sin salida** (todo nodo es alcanzable), la **regeneración de vidas** por
+tiempo y el **intérprete de efectos** de los eventos.
 
 ---
 
@@ -289,8 +300,11 @@ SQLite en `~/.pokemonarena/pokemonarena.db`, auto-migrada con Exposed:
 | `item_inventory` | Items comprados con su cantidad |
 | `gym_badges` | Gimnasios y ligas conquistados, con fecha |
 | `user_profile` | Nombre y género del entrenador |
+| `rogue_upgrades` | Nivel comprado de cada mejora permanente del modo Rogue |
+| `rogue_lives` | Vidas del modo Rogue y momento de la última recarga |
 
-> La **Expedición Rogue** no se persiste: cada run vive en memoria y se cobra al
-> final, por diseño.
+> La **run** de la Expedición Rogue no se persiste (vive en memoria y se cobra al
+> final); lo que **sí** persiste es la **meta-progresión**: las mejoras permanentes y
+> las vidas (con su recarga por tiempo real).
 
 ---

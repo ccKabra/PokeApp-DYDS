@@ -21,9 +21,9 @@ class ItemCatalogTest {
     @Test
     fun `boosts_increaseTheTargetedStats`() {
         val band    = ItemCatalog.byId("choice-band")!!
-        val boosted = band.boosts.applyTo(TestFixtures.balancedStats)   // 80 en todo
-        assertEquals(120, boosted.attack)          // 80 × 1.5
-        assertEquals(80,  boosted.defense)         // sin cambio
+        val boosted = band.boosts.applyTo(TestFixtures.balancedStats)
+        assertEquals(120, boosted.attack)
+        assertEquals(80,  boosted.defense)
         assertEquals(80,  boosted.speed)
     }
 
@@ -32,7 +32,7 @@ class ItemCatalogTest {
         val card  = TestFixtures.fireCard
         val armed = card.copy(heldItem = ItemCatalog.byId("life-orb"))
         assertTrue(armed.effectiveStats.total > card.effectiveStats.total)
-        assertEquals(card.stats, card.effectiveStats)   // sin item, sin cambio
+        assertEquals(card.stats, card.effectiveStats)
     }
 
     @Test
@@ -60,7 +60,7 @@ class PurchaseItemUseCaseTest {
     private val itemRepo   = mockk<ItemRepository>(relaxed = true)
     private val battleRepo = mockk<BattleRepository>(relaxed = true)
     private val useCase    = PurchaseItemUseCase(itemRepo, battleRepo)
-    private val band       = ItemCatalog.byId("choice-band")!!   // 450
+    private val band       = ItemCatalog.byId("choice-band")!!
 
     @Test
     fun `execute_withEnoughCoins_addsToInventoryAndDeductsPrice`() = runTest {

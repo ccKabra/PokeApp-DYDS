@@ -3,6 +3,7 @@ package com.pokemonarena.presentation.screens.battle
 import com.pokemonarena.domain.entity.BattleResult
 import com.pokemonarena.domain.entity.Card
 import com.pokemonarena.domain.entity.Gym
+import com.pokemonarena.domain.entity.TeamRules
 import com.pokemonarena.domain.entity.WeatherCondition
 
 sealed interface BattleUiState {
@@ -14,7 +15,7 @@ sealed interface BattleUiState {
         val botCards:  List<Card>,
         val weather:   WeatherCondition
     ) : BattleUiState {
-        val canBattle get() = teamCards.size == 3
+        val canBattle get() = teamCards.size == TeamRules.SIZE
     }
 
     data class Combat(

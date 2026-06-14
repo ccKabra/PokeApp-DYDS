@@ -9,7 +9,6 @@ object AimGame {
     const val MIN_HIT_REWARD = 2
     const val MAX_HIT_REWARD = 12
 
-    /** [sizeFraction]: 0 = globo más chico (paga más), 1 = globo más grande (paga menos). */
     fun hitRewardFor(sizeFraction: Float): Int {
         val fraction = sizeFraction.coerceIn(0f, 1f)
         return (MAX_HIT_REWARD - (MAX_HIT_REWARD - MIN_HIT_REWARD) * fraction).roundToInt()

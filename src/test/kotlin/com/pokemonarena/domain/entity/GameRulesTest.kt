@@ -136,7 +136,6 @@ class TypeMatchupTest {
 
     @Test
     fun `multiplier_isAsymmetric`() {
-        // La ventaja de A sobre B no implica la inversa: cada dirección se evalúa sola.
         assertEquals(TypeMatchup.ADVANTAGE,    TypeMatchup.multiplier("electric", "water"))
         assertEquals(TypeMatchup.DISADVANTAGE, TypeMatchup.multiplier("water", "water"))
     }

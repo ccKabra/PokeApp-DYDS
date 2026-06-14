@@ -41,8 +41,6 @@ class MineViewModelTest {
     @AfterTest
     fun tearDown() { Dispatchers.resetMain() }
 
-    // FixedRandom(0.99) infla ~0.30 por click (explota al 4to);
-    // FixedRandom(0.0) infla 0.07 por click (explota recién al 15to).
     private fun vm(random: Random) = MineViewModel(mineCoins, getUserCoins, aimShot, random)
 
     @Test
@@ -72,7 +70,7 @@ class MineViewModelTest {
     fun `onEvent_dig_explodesWhenPressureReachesTheLimit`() = runTest {
         every { getUserCoins.execute() } returns flowOf(0)
         coEvery { mineCoins.execute() } returns MiningReward(1, MiningTier.COMMON)
-        val viewModel = vm(FixedRandom(0.99f))   // ~0.30 por click
+        val viewModel = vm(FixedRandom(0.99f))
 
         repeat(4) { viewModel.onEvent(MineUiEvent.Dig) }
 
@@ -87,7 +85,7 @@ class MineViewModelTest {
         coEvery { mineCoins.execute() } returns MiningReward(1, MiningTier.COMMON)
         val viewModel = vm(FixedRandom(0.99f))
 
-        repeat(7) { viewModel.onEvent(MineUiEvent.Dig) }   // los últimos 3 pegan contra el globo roto
+        repeat(7) { viewModel.onEvent(MineUiEvent.Dig) }
 
         assertEquals(4, viewModel.uiState.value.clicks)
         coVerify(exactly = 4) { mineCoins.execute() }
@@ -103,7 +101,7 @@ class MineViewModelTest {
         repeat(2) { viewModel.onEvent(MineUiEvent.Dig) }
         assertTrue(viewModel.uiState.value.pressure > 0.5f)
 
-        testDispatcher.scheduler.advanceTimeBy(2_000)      // pausa: pasa el umbral de desinflado
+        testDispatcher.scheduler.advanceTimeBy(2_000)
         testDispatcher.scheduler.runCurrent()
 
         assertEquals(0f, viewModel.uiState.value.pressure)
@@ -120,7 +118,7 @@ class MineViewModelTest {
         repeat(4) { viewModel.onEvent(MineUiEvent.Dig) }
         assertTrue(viewModel.uiState.value.isBroken)
 
-        testDispatcher.scheduler.advanceTimeBy(7_000)      // pasa el cooldown completo
+        testDispatcher.scheduler.advanceTimeBy(7_000)
         testDispatcher.scheduler.runCurrent()
 
         assertFalse(viewModel.uiState.value.isBroken)

@@ -13,6 +13,10 @@ object CollectionRules {
     const val MAX_OWNED_CARDS = 8
 }
 
+object TeamRules {
+    const val SIZE = 3
+}
+
 data class Pokemon(
     val id: Int, val name: String,
     val imageUrl: String, val types: List<String>
@@ -86,7 +90,7 @@ data class Gym(
         cardPool.shuffled(random).take(BOT_TEAM_SIZE)
 
     companion object {
-        const val BOT_TEAM_SIZE = 3
+        const val BOT_TEAM_SIZE = TeamRules.SIZE
     }
 }
 

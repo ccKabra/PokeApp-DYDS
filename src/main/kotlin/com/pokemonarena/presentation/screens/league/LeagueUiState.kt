@@ -8,6 +8,7 @@ import com.pokemonarena.domain.entity.ItemCatalog
 import com.pokemonarena.domain.entity.League
 import com.pokemonarena.domain.entity.LeagueOpponent
 import com.pokemonarena.domain.entity.Region
+import com.pokemonarena.domain.entity.TeamRules
 import com.pokemonarena.domain.usecase.FirstWinReward
 
 sealed interface LeagueUiState {
@@ -26,7 +27,7 @@ sealed interface LeagueUiState {
         val inventory:     Map<String, Int> = emptyMap()
     ) : LeagueUiState {
         val opponent: LeagueOpponent get() = league.opponents[opponentIndex]
-        val canFight: Boolean        get() = team.size == 3
+        val canFight: Boolean        get() = team.size == TeamRules.SIZE
         val availableItems: List<Pair<Item, Int>>
             get() = catalog.filterNot { ItemCatalog.isConsumable(it.id) }
                 .mapNotNull { item -> inventory[item.id]?.takeIf { it > 0 }?.let { item to it } }

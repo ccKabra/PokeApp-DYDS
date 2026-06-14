@@ -24,6 +24,7 @@ import com.pokemonarena.domain.entity.BattleRewards
 import com.pokemonarena.domain.entity.Card
 import com.pokemonarena.domain.entity.Gym
 import com.pokemonarena.domain.entity.Region
+import com.pokemonarena.domain.entity.TeamRules
 import kotlinx.coroutines.delay
 import com.pokemonarena.presentation.theme.AppColors
 import com.pokemonarena.presentation.theme.AppIcons
@@ -65,7 +66,7 @@ fun GymsScreen(viewModel: GymsViewModel, navigator: Navigator, region: Region) {
                                    verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             items(state.gyms, key = { it.gym.name }) { gww ->
                                 GymCard(gww,
-                                        canChallenge = state.teamSize >= 3 && state.regionUnlocked,
+                                        canChallenge = state.teamSize >= TeamRules.SIZE && state.regionUnlocked,
                                         earned = gww.gym.name in state.earnedBadges) {
                                     navigator.navigateTo(Screen.Battle(gww.gym.name))
                                 }

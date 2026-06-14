@@ -2,9 +2,7 @@ package com.pokemonarena.domain.usecase
 
 import com.pokemonarena.FixedRandom
 import com.pokemonarena.domain.entity.RogueBlessing
-import com.pokemonarena.domain.entity.RogueMove
 import com.pokemonarena.domain.entity.RoguePokemon
-import com.pokemonarena.domain.entity.RogueRules
 import com.pokemonarena.domain.entity.RogueSpecies
 import com.pokemonarena.domain.entity.Stats
 import kotlin.test.Test
@@ -15,158 +13,108 @@ class RogueBattleEngineTest {
 
     private val engine = RogueBattleEngine(FixedRandom(0.5f))
 
-    private fun pokemonOf(attack: Int = 80, defense: Int = 60, speed: Int = 80,
-                          hp: Int = 80, type: String = "normal", name: String = "mon") =
+    private fun mon(attack: Int = 80, defense: Int = 60, speed: Int = 80,
+                    hp: Int = 80, type: String = "normal", name: String = "mon") =
         RoguePokemon.of(RogueSpecies(1, name, "", listOf(type),
                                      Stats(hp, attack, defense, attack, defense, speed), 1))
 
-    private fun move(type: String, power: Float = 1f) = RogueMove("prueba", type, power)
-
     @Test
-    fun `exchange_fasterPokemonStrikesFirst`() {
-        val fast = pokemonOf(speed = 120, name = "veloz")
-        val slow = pokemonOf(speed = 30, name = "lento")
+    fun `duel_fasterPokemonStrikesFirst`() {
+        val fast = mon(speed = 120, name = "veloz", hp = 400, defense = 999)
+        val slow = mon(speed = 30, name = "lento", hp = 400, defense = 999)
 
-        val result = engine.exchange(fast, move("normal"), slow, emptySet())
+        val result = engine.duel(fast, slow, emptySet())
 
         assertTrue(result.strikes.first().isPlayerAttack)
         assertEquals("Veloz", result.strikes.first().attackerName)
     }
 
     @Test
-    fun `exchange_enemyNeverFaintsEvenUnderLethalDamage`() {
-        val killer = pokemonOf(attack = 99_999, speed = 120)
-        val victim = pokemonOf(hp = 10, speed = 10, defense = 1)
+    fun `duel_isWinnable_strongPlayerKnocksOutTheEnemy`() {
+        val killer = mon(attack = 9_999, speed = 120)
+        val victim = mon(hp = 10, speed = 10, defense = 1)
 
-        repeat(50) {
-            val result = engine.exchange(killer, move("normal", 9f), victim, emptySet())
-            assertTrue(result.enemy.isAlive, "el rival nunca puede ser derrotado")
-            assertTrue(result.enemy.currentHp >= RogueRules.ENEMY_HP_FLOOR)
-            assertTrue(result.strikes.none { it.isPlayerAttack && it.defenderFainted },
-                       "ningún golpe del jugador puede debilitar al rival")
-        }
+        val result = engine.duel(killer, victim, emptySet())
+
+        assertTrue(result.enemyFainted, "el rival SÍ puede ser derrotado")
+        assertTrue(result.player.isAlive, "el jugador sobrevive")
+        assertTrue(!result.enemy.isAlive)
     }
 
     @Test
-    fun `exchange_lethalBlowEnragesHealsAndTaunts`() {
-        val killer = pokemonOf(attack = 99_999, speed = 120)
-        val victim = pokemonOf(hp = 10, speed = 10, defense = 1)
+    fun `duel_endsWithExactlyOneFainted`() {
+        val a = mon(attack = 300, speed = 90, hp = 60)
+        val b = mon(attack = 300, speed = 50, hp = 60)
 
-        val result = engine.exchange(killer, move("normal", 9f), victim, emptySet())
+        val result = engine.duel(a, b, emptySet())
 
-        assertTrue(result.enemyEnraged, "un golpe letal lo enfurece")
-        assertTrue(result.taunt != null, "y suelta una burla")
-        assertTrue(result.enemy.currentHp > RogueRules.ENEMY_HP_FLOOR, "se cura al enfurecerse")
+        assertTrue(result.playerFainted != result.enemyFainted,
+                   "un duelo termina cuando uno cae, no ambos")
     }
 
     @Test
-    fun `exchange_enemyAlwaysCounterattacks`() {
-        val fast  = pokemonOf(speed = 120)
-        val enemy = pokemonOf(speed = 10, hp = 300)
+    fun `duel_damageIsAtLeastOne`() {
+        val weak = mon(attack = 1, speed = 120, hp = 400)
+        val tank = mon(defense = 999, speed = 10, hp = 400)
 
-        val result = engine.exchange(fast, move("normal"), enemy, emptySet())
-
-        assertEquals(2, result.strikes.size, "ningún KO evita el contraataque del rival")
-        assertTrue(result.strikes[0].isPlayerAttack)
-        assertTrue(!result.strikes[1].isPlayerAttack)
-    }
-
-    @Test
-    fun `exchange_enemyRampsUpEachTurn`() {
-        val player = pokemonOf(speed = 120, hp = 500)
-        val enemy  = pokemonOf(speed = 10, hp = 400)
-
-        val after = engine.exchange(player, move("normal"), enemy, emptySet()).enemy
-
-        assertTrue(after.attack > enemy.attack, "el rival se vuelve más letal cada turno")
-    }
-
-    @Test
-    fun `exchange_slowerPlayerReceivesTheFirstHit`() {
-        val slowPlayer = pokemonOf(speed = 10)
-        val fastEnemy  = pokemonOf(speed = 120)
-
-        val result = engine.exchange(slowPlayer, move("normal"), fastEnemy, emptySet())
-
-        assertTrue(!result.strikes.first().isPlayerAttack)
-    }
-
-    @Test
-    fun `exchange_damageIsAtLeastOne`() {
-        val weak = pokemonOf(attack = 1)
-        val tank = pokemonOf(defense = 999, speed = 10)
-
-        val result = engine.exchange(weak, move("normal", 0.1f), tank, emptySet())
+        val result = engine.duel(weak, tank, emptySet())
 
         assertTrue(result.strikes.all { it.damage >= 1 })
     }
 
     @Test
-    fun `exchange_recordsTheMoveNameAndRemainingHp`() {
-        val player = pokemonOf(speed = 120)
-        val enemy  = pokemonOf(speed = 10, hp = 300)
+    fun `duel_superEffectiveHitsHarderThanNotVeryEffective`() {
+        val water = mon(type = "water", speed = 120, attack = 80, hp = 400)
+        val fireEnemy  = mon(type = "fire",  speed = 10, hp = 9_000, defense = 1, name = "fuego")
+        val waterEnemy = mon(type = "water", speed = 10, hp = 9_000, defense = 1, name = "agua")
 
-        val strike = engine.exchange(player, move("fire"), enemy, emptySet()).strikes.first()
+        val superEff = engine.duel(water, fireEnemy, emptySet()).strikes.first()
+        val notEff   = engine.duel(water, waterEnemy, emptySet()).strikes.first()
 
-        assertEquals("prueba", strike.moveName)
-        assertEquals(strike.defenderHpAfter, strike.defenderMaxHp - strike.damage)
+        assertTrue(superEff.damage > notEff.damage, "agua sobre fuego (x2) pega más que sobre agua (x0.5)")
+        assertEquals(2f, superEff.effectiveness)
     }
 
     @Test
-    fun `exchange_vampirismHealsThePlayer`() {
-        val player = pokemonOf(speed = 120).damaged(100)
-        val enemy  = pokemonOf(speed = 10, hp = 300)
+    fun `duel_vampirismHealsThePlayer`() {
+        val player = mon(attack = 9_999, speed = 120).damaged(100)
+        val enemy  = mon(hp = 10, speed = 10, defense = 1)
 
-        val healed   = engine.exchange(player, move("normal"), enemy, setOf(RogueBlessing.VAMPIRISMO))
-        val unhealed = engine.exchange(player, move("normal"), enemy, emptySet())
+        val healed   = engine.duel(player, enemy, setOf(RogueBlessing.VAMPIRISMO))
+        val unhealed = engine.duel(player, enemy, emptySet())
 
         assertTrue(healed.player.currentHp > unhealed.player.currentHp)
     }
 
     @Test
-    fun `exchange_furyIncreasesDamage`() {
-        val player = pokemonOf(speed = 120)
-        val enemy  = pokemonOf(speed = 10, hp = 300)
+    fun `duel_furyIncreasesDamage`() {
+        val player = mon(speed = 120, hp = 400)
+        val enemy  = mon(speed = 10, hp = 9_000, defense = 1)
 
-        val withFury    = engine.exchange(player, move("normal"), enemy, setOf(RogueBlessing.FURIA))
-        val withoutFury = engine.exchange(player, move("normal"), enemy, emptySet())
+        val withFury    = engine.duel(player, enemy, setOf(RogueBlessing.FURIA)).strikes.first()
+        val withoutFury = engine.duel(player, enemy, emptySet()).strikes.first()
 
-        assertTrue(withFury.strikes.first().damage > withoutFury.strikes.first().damage)
+        assertTrue(withFury.damage > withoutFury.damage)
     }
 
     @Test
-    fun `exchange_stabBoostsDamageForMatchingType`() {
-        val fire = pokemonOf(type = "fire", speed = 120)
-        val enemy = pokemonOf(type = "normal", speed = 10, hp = 400)
+    fun `duel_impetusBlessingWinsTheSpeedRace`() {
+        val player = mon(speed = 100, hp = 400, defense = 999)
+        val enemy  = mon(speed = 110, hp = 400, defense = 999)
 
-        val stab   = engine.exchange(fire, move("fire"), enemy, emptySet())
-        val offType = engine.exchange(fire, move("normal"), enemy, emptySet())
-
-        assertTrue(stab.strikes.first().damage > offType.strikes.first().damage,
-                   "un ataque del propio tipo pega más por STAB")
-    }
-
-    @Test
-    fun `exchange_impetusBlessingWinsTheSpeedTie`() {
-        val player = pokemonOf(speed = 100)
-        val enemy  = pokemonOf(speed = 110)
-
-        val result = engine.exchange(player, move("normal"), enemy, setOf(RogueBlessing.IMPETU))
+        val result = engine.duel(player, enemy, setOf(RogueBlessing.IMPETU))
 
         assertTrue(result.strikes.first().isPlayerAttack,
                    "con +30% de velocidad, 100 le gana a 110")
     }
 
     @Test
-    fun `enemyFreeStrike_hitsOnlyTheIncomingPokemon`() {
-        val incoming = pokemonOf()
-        val enemy    = pokemonOf(attack = 100)
+    fun `duel_recordsRemainingHpConsistently`() {
+        val player = mon(speed = 120, hp = 400)
+        val enemy  = mon(speed = 10, hp = 9_000, defense = 1)
 
-        val result = engine.enemyFreeStrike(incoming, enemy)
+        val strike = engine.duel(player, enemy, emptySet()).strikes.first()
 
-        assertEquals(1, result.strikes.size)
-        assertTrue(!result.strikes.single().isPlayerAttack)
-        assertTrue(result.player.currentHp < incoming.currentHp)
-        assertEquals(enemy, result.enemy)
+        assertEquals(strike.defenderMaxHp - strike.damage, strike.defenderHpAfter)
     }
 }

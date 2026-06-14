@@ -56,7 +56,10 @@ fun main() {
             }
         ) {
             Window(onCloseRequest = ::exitApplication, title = Constants.WINDOW_TITLE,
-                   state = state, resizable = false) {
+                   state = state, resizable = true) {
+                LaunchedEffect(Unit) {
+                    window.minimumSize = java.awt.Dimension(Constants.MIN_WIDTH, Constants.MIN_HEIGHT)
+                }
                 PokemonArenaApp()
             }
         }
@@ -110,9 +113,12 @@ private fun MainContent(profile: PlayerProfile) {
                             leagueState is LeagueUiState.Strategy ||
                             leagueState is LeagueUiState.Combat
 
+    val rogueState = rogueVM.uiState.collectAsState().value
+    val inRogueRun = screen is Screen.Rogue && rogueState.locksNavigation
+
     Row(Modifier.fillMaxSize()) {
         NavigationSidebar(navigator, coins,
-                          locked = screen is Screen.Battle || inLeagueChallenge,
+                          locked = screen is Screen.Battle || inLeagueChallenge || inRogueRun,
                           unlockedRegions = navVM.unlockedRegions.collectAsState().value,
                           profile = profile)
         Box(Modifier.weight(1f).fillMaxHeight()) {

@@ -52,4 +52,13 @@ object TypeMatchup {
         WEAK_AGAINST[attackerType]?.contains(defenderType)   == true -> DISADVANTAGE
         else                                                         -> NEUTRAL
     }
+
+    const val SUPER_EFFECTIVE = 2.0f
+    const val NOT_EFFECTIVE   = 0.5f
+
+    fun effectiveness(attackerType: String, defenderType: String): Float = when {
+        STRONG_AGAINST[attackerType]?.contains(defenderType) == true -> SUPER_EFFECTIVE
+        WEAK_AGAINST[attackerType]?.contains(defenderType)   == true -> NOT_EFFECTIVE
+        else                                                         -> NEUTRAL
+    }
 }

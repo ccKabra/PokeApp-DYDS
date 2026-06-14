@@ -54,7 +54,7 @@ class MineCoinsUseCaseTest {
     @Test
     fun `execute_creditsTheRewardToTheUserCoins`() = runTest {
         every { repo.getUserStatistics() } returns flowOf(UserStatistics(coins = 10))
-        val useCase = MineCoinsUseCase(repo, FixedRandom(0.40f))   // COMMON: +1
+        val useCase = MineCoinsUseCase(repo, FixedRandom(0.40f))
 
         val reward = useCase.execute()
 
@@ -67,7 +67,7 @@ class MineCoinsUseCaseTest {
     @Test
     fun `execute_withLuckyRoll_paysTheJackpot`() = runTest {
         every { repo.getUserStatistics() } returns flowOf(UserStatistics(coins = 0))
-        val useCase = MineCoinsUseCase(repo, FixedRandom(0.0f))    // JACKPOT: +100
+        val useCase = MineCoinsUseCase(repo, FixedRandom(0.0f))
 
         val reward = useCase.execute()
 
@@ -79,7 +79,7 @@ class MineCoinsUseCaseTest {
 
     @Test
     fun `execute_withEmptyStrike_doesNotTouchTheCoins`() = runTest {
-        val useCase = MineCoinsUseCase(repo, FixedRandom(0.80f))   // NOTHING: +0
+        val useCase = MineCoinsUseCase(repo, FixedRandom(0.80f))
 
         val reward = useCase.execute()
 
@@ -90,7 +90,6 @@ class MineCoinsUseCaseTest {
 
     @Test
     fun `execute_rescuesABankruptPlayer`() = runTest {
-        // El caso del amigo: 0 monedas, todo vendido. Un golpe con premio siempre suma.
         every { repo.getUserStatistics() } returns flowOf(UserStatistics(coins = 0))
         val useCase = MineCoinsUseCase(repo, FixedRandom(0.40f))
 

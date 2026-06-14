@@ -4,6 +4,7 @@ import com.pokemonarena.domain.entity.Card
 import com.pokemonarena.domain.entity.CollectionRules
 import com.pokemonarena.domain.entity.Item
 import com.pokemonarena.domain.entity.ItemCatalog
+import com.pokemonarena.domain.entity.TeamRules
 import com.pokemonarena.domain.entity.UserStatistics
 
 data class MyTeamState(
@@ -14,8 +15,8 @@ data class MyTeamState(
     val inventory:  Map<String, Int> = emptyMap(),
     val isLoading:  Boolean          = true
 ) {
-    val teamIsFull get() = teamCards.size >= 3
-    val canBattle  get() = teamCards.size == 3
+    val teamIsFull get() = teamCards.size >= TeamRules.SIZE
+    val canBattle  get() = teamCards.size == TeamRules.SIZE
     val maxCards   get() = CollectionRules.MAX_OWNED_CARDS
     val availableItems: List<Pair<Item, Int>>
         get() = catalog.filterNot { ItemCatalog.isConsumable(it.id) }

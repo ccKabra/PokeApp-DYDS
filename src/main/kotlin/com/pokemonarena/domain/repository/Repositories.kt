@@ -10,15 +10,15 @@ interface PokemonRepository {
 
 interface CardRepository {
     suspend fun getCardsForPokemon(pokemonName: String): List<Card>
-    
+
     fun getOwnedCards(): Flow<List<Card>>
-    
+
     suspend fun purchaseCard(card: Card)
-    
+
     suspend fun removeCard(cardId: String)
-    
+
     fun isCardOwned(cardId: String): Flow<Boolean>
-    
+
     fun getTeamCards(): Flow<List<Card>>
 
     suspend fun updateTeamMembership(cardId: String, inTeam: Boolean)
@@ -55,6 +55,13 @@ interface WeatherRepository {
 
 interface RoguePoolRepository {
     suspend fun getPool(): List<RogueSpecies>
+}
+
+interface RogueMetaRepository {
+    fun getUpgrades(): Flow<RogueMetaState>
+    suspend fun setLevel(upgradeId: String, level: Int)
+    suspend fun getLives(): RogueLives
+    suspend fun saveLives(lives: RogueLives)
 }
 
 interface ProfileRepository {

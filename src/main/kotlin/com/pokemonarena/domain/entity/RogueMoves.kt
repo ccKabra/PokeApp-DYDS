@@ -2,10 +2,6 @@ package com.pokemonarena.domain.entity
 
 data class RogueMove(val name: String, val type: String, val power: Float)
 
-/**
- * Catálogo de ataques por tipo, ordenados de más débil a más fuerte.
- * El nivel requerido se deriva de la potencia: los golpes fuertes se aprenden más tarde.
- */
 object RogueMoves {
 
     val BASIC = RogueMove("Placaje", "normal", 0.85f)
@@ -33,7 +29,6 @@ object RogueMoves {
 
     fun movesOf(type: String): List<RogueMove> = catalog[type] ?: listOf(BASIC)
 
-    /** Set inicial del jugador: golpe básico + el ataque más débil de su tipo primario. */
     fun starterSet(types: List<String>): List<RogueMove> {
         val set = LinkedHashSet<RogueMove>().apply { add(BASIC) }
         types.forEach { movesOf(it).firstOrNull()?.let(set::add) }
@@ -41,7 +36,6 @@ object RogueMoves {
         return set.toList()
     }
 
-    /** Los rivales arrancan con un repertorio algo más amplio para que cada pelea se sienta distinta. */
     fun enemySet(types: List<String>): List<RogueMove> {
         val set = LinkedHashSet<RogueMove>().apply { add(BASIC) }
         types.forEach { type -> movesOf(type).take(2).forEach(set::add) }
@@ -54,7 +48,6 @@ object RogueMoves {
         else           -> 1
     }
 
-    /** El mejor ataque de los tipos del Pokémon que aún no conoce y ya puede aprender por nivel. */
     fun nextLearnable(current: List<RogueMove>, types: List<String>, level: Int): RogueMove? =
         (types + "normal").distinct().flatMap { movesOf(it) }.distinct()
             .filter { it !in current && requiredLevel(it.power) <= level }

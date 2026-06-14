@@ -68,7 +68,7 @@ private fun StatsContent(stats: UserStatistics, history: List<BattleResult>) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        
+
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 StatChip("Total",    stats.totalBattles.toString(), Modifier.weight(1f))
@@ -77,7 +77,7 @@ private fun StatsContent(stats: UserStatistics, history: List<BattleResult>) {
                 StatChip("Empates",  stats.totalDraws.toString(),   Modifier.weight(1f))
             }
         }
-        
+
         item {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
@@ -92,7 +92,7 @@ private fun StatsContent(stats: UserStatistics, history: List<BattleResult>) {
                 }
             }
         }
-        
+
         item {
             Card(Modifier.fillMaxWidth()) {
                 Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -111,7 +111,7 @@ private fun StatsContent(stats: UserStatistics, history: List<BattleResult>) {
                 }
             }
         }
-        
+
         stats.favoritePokemon?.let { fav ->
             item {
                 Card(Modifier.fillMaxWidth()) {
@@ -128,7 +128,7 @@ private fun StatsContent(stats: UserStatistics, history: List<BattleResult>) {
                 }
             }
         }
-        
+
         if (history.isNotEmpty()) {
             item { Text("Batallas recientes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
             items(history, key = { it.date + it.playerCard.name }) { battle ->
